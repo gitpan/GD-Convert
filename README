@@ -1,0 +1,21 @@
+GD::Convert Module
+
+GD::Convert is a pure perl module which provides additional output
+functions for the GD module: ppm and xpm. These formats are useful if
+you need to dynamically create photos for Tk. Standard Perl/Tk does
+not accept any of GD's output formats: png only via the additional
+Tk::PNG module and jpeg only via the additional Tk::JPEG module. So if
+you cannot compile on your system, this module is for you.
+
+To install, type
+
+	$ perl Makefile.PL
+	$ make
+	$ make install
+
+For Windows NT and ActiveState Perl, replace "make" with "nmake".
+Otherwise, just copy Convert.pm to C:\Perl\site\lib\GD (create this
+directory if not existing).
+
+Send bug reports, comments and suggestions to slaven.rezic@berlin.de
+
