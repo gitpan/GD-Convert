@@ -1,5 +1,11 @@
 Revision history for Perl extension GD::Convert.
 
+2.04
+	- support for wbmp output
+
+2.03
+	- support for newFromPpm(Data), newFromGif(Data)
+
 2.01
 	- GD 2.x support
 

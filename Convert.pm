@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 2.3 2003/05/29 22:18:05 eserte Exp $
+# $Id: Convert.pm,v 2.4 2003/05/29 22:56:46 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001,2003 Slaven Rezic. All rights reserved.
@@ -16,14 +16,14 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION $DEBUG);
-$VERSION = sprintf("%d.%02d", q$Revision: 2.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 2.4 $ =~ /(\d+)\.(\d+)/);
 
 sub import {
     my($pkg, @args) = @_;
     foreach my $arg (@args) {
 	my($f, $as) = split /=/, $arg;
 	if ($f =~ /^(gif|newFromGif|newFromGifData)$/) {
-	    if ($as eq 'any') {
+	    if (!defined $as || $as eq 'any') {
 		# check whether GD handles the gif itself
 		if ($GD::VERSION <= 1.19 ||
 		    ($GD::VERSION >= 1.37 && $GD::VERSION < 1.40 && GD::Image->can($f))) {
@@ -48,6 +48,12 @@ sub import {
 			die "Can't find any GIF converter for $f in $ENV{PATH}";
 		    }
 		}
+	    }
+	} elsif ($f =~ /^(wbmp)$/) {
+	    if ($GD::VERSION >= 1.26) {
+		# wbmp support already in GD
+	    } else {
+		$as = "_wbmp";
 	    }
 	} else {
 	    die "Import directive $arg invalid: $f not handled";
@@ -203,11 +209,11 @@ sub newFromPpmData {
     my($self, $data, $truecolor) = @_;
     (my $signature, my $dimensions, my $maxval, $data) = split /\n/, $data, 4;
     if ($signature ne 'P6') {
-	die "Can handle only P6 (ppm raw) files";
+	die "Can handle only P6 (ppm raw) files, got <$signature>";
     }
     my($width, $height) = split /\s+/, $dimensions;
     if ($maxval != 255) {
-	die "Can handle only ppm files with maxval=255";
+	die "Can handle only ppm files with maxval=255, got <$maxval>";
     }
     my $gd;
     if ($GD::VERSION >= 2 && defined $truecolor) {
@@ -409,6 +415,12 @@ sub _newFromGif_external {
     }
     close RDR;
 
+    if ($GD::Convert::DEBUG) {
+	local $/ = undef;
+	my $err = scalar <ERR>;
+	warn $err if defined $err && $err ne "";
+    }
+
     my $cmd;
     if ($input_type eq 'png') {
 	$cmd = "newFromPngData";
@@ -441,14 +453,9 @@ sub newFromGifData_imagemagick {
     shift->_newFromGif_external("imagemagick", "data", @_);
 }
 
-#XXX merge with GD::Wbmp, delete GD::Wbmp
 sub _wbmp {
     my $im = shift;
-    if ($im->can('wbmp')) {
-	$im->wbmp(@_);
-    } else {
-	die "NYI";
-    }
+    GD::Wbmp::write($im, @_);
 }
 
 sub _data_from_file {
@@ -469,6 +476,115 @@ sub _data_from_file {
     $data;
 }
 
+package GD::Wbmp;
+
+use constant WBMP_WHITE => 1;
+use constant WBMP_BLACK => 0;
+
+sub write {
+    my($gd_image, $fg) = @_;
+
+    # create the WBMP
+    my($width, $height) = $gd_image->getBounds;
+    my $wbmp = createwbmp($width, $height, WBMP_WHITE);
+    if (!$wbmp) {
+	die "Could not create WBMP";
+    }
+
+    # fill up the WBMP structure
+    my $pos = 0;
+    for(my $y=0; $y<$height; $y++) {
+	for(my $x=0; $x<$width; $x++) {
+	    if ($gd_image->getPixel($x, $y) == $fg) {
+		$wbmp->{Bitmap}[$pos] = WBMP_BLACK;
+	    }
+	    $pos++;
+	}
+    }
+
+    # write the WBMP as a string
+    writewbmp($wbmp);
+
+}
+
+sub createwbmp {
+    my($width, $height, $color) = @_;
+
+    my $wbmp = {Bitmap => [],
+		Width  => $width,
+		Height => $height,
+	       };
+
+    for (my $i = 0; $i<$width*$height; $wbmp->{Bitmap}[$i++] = $color) {}
+
+    $wbmp;
+}
+
+sub writewbmp {
+    my($wbmp) = @_;
+
+    my $out_buf = "";
+
+    # Generate the header
+    $out_buf .= "\0";         # WBMP Type 0: B/W, Uncompressed bitmap
+    $out_buf .= "\0";         # FixHeaderField
+
+    # Size of the image
+    my($width, $height) = ($wbmp->{Width}, $wbmp->{Height});
+    $out_buf .= putmbi($width);      # width
+    $out_buf .= putmbi($height);     # height
+
+    # Image data
+    for(my $row=0; $row<$height; $row++) {
+        my $bitpos=8;
+        my $octet=0;
+        for(my $col=0; $col<$width; $col++) {
+            $octet |= (($wbmp->{Bitmap}[ $row*$width + $col] == 1)
+		       ? WBMP_WHITE
+		       : WBMP_BLACK) << --$bitpos;
+            if ($bitpos == 0) {
+                $bitpos=8;
+                $out_buf .= pack("C", $octet);
+                $octet=0;
+            }
+        }
+        if ($bitpos != 8) {
+	    $out_buf .= pack("C", $octet);
+	}
+    }
+
+    $out_buf;
+}
+
+# putmbi
+#
+# Put a multibyte intgerer in some kind of output stream
+# I work here with a function pointer, to make it as generic
+# as possible. Look at this function as an iterator on the
+# mbi integers it spits out.
+#
+sub putmbi {
+    my($i) = @_;
+
+    my $out_buf = "";
+    my($cnt, $l, $accu);
+
+    # Get number of septets
+    $cnt = 0;
+    $accu = 0;
+    while ( $accu != $i ) {
+        $accu += $i & 0x7f << 7*$cnt++;
+    }
+
+    # Produce the multibyte output
+    for ($l = $cnt-1; $l>0; $l--) {
+        $out_buf .= pack("C", 0x80 | ($i & 0x7f << 7*$l ) >> 7*$l);
+    }
+
+    $out_buf .= pack("C", $i & 0x7f);
+    $out_buf;
+}
+
 1;
 
 __END__
@@ -480,11 +596,12 @@ GD::Convert - additional output formats for GD
 =head1 SYNOPSIS
 
     use GD;
-    use GD::Convert qw(gif=gif_netpbm newFromGif=newFromGif_imagemagick);
+    use GD::Convert qw(gif=gif_netpbm newFromGif=newFromGif_imagemagick wbmp);
     ...
     $gd->ppm;
     $gd->xpm;
     $gd->gif;
+    $gd->wbmp;
     ...
     $gd = GD::Image->newFromPpmData(...);
     $gd = GD::Image->newFromGif(...);
@@ -492,7 +609,7 @@ GD::Convert - additional output formats for GD
 =head1 DESCRIPTION
 
 This module provides additional output methods for the GD module:
-C<ppm>, C<xpm>, C<gif_netpbm> and C<gif_imagemagick>, and also
+C<ppm>, C<xpm>, C<wbmp>, C<gif_netpbm> and C<gif_imagemagick>, and also
 additional constructors: C<newFromPpm>, C<newFromPpmData>,
 C<newFromGif_netpbm>, C<newFromGifData_netpbm>,
 C<newFromGif_imagemagick>, C<newFromGifData_imagemagick>.
@@ -515,6 +632,11 @@ Use external commands from imagemagick to create GIF images.
 =item gif=any
 
 Use any of the above methods to create GIF images.
+
+=item wbmp
+
+Create wbmp images. Only necessary for GD before version 1.26, but it
+does not hurt if it is included with newer GD versions.
 
 =back
 
@@ -581,6 +703,9 @@ programs.
 
 =back
 
+You can set the variable C<$GD::Convert::DEBUG> to a true value to get
+some information about external commands used while converting.
+
 =head1 BUGS
 
 Transparency will get lost in PPM images.
@@ -590,6 +715,9 @@ The transparency handling for GIF images is clumsy --- maybe the new
 
 The size of the created files should be smaller, especially of the XPM
 output.
+
+There may be problems if running under modperl... stay tuned for more
+diagnostics.
 
 =head1 AUTHOR
 
