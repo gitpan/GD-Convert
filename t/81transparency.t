@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 81transparency.t,v 1.6 2003/07/13 13:15:28 eserte Exp $
+# $Id: 81transparency.t,v 1.8 2004/04/15 23:24:29 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -49,7 +49,7 @@ $c->createLine(0,0,$c->cget(-width),$c->cget(-height),-width=>3,-fill=>"blue");
 $c->createLine(0,$c->cget(-height),$c->cget(-width),0,-width=>3,-fill=>"blue");
 
 my $gif = $im->gif_netpbm(-transparencyhack => 1);
-if ($gif eq '') {
+if (!defined $gif || $gif eq '') {
     skip(1,1); # probably no netpbm installed
 } else {
     ok($gif =~ /GIF/, 1);
@@ -86,7 +86,8 @@ if (!defined $gif3 || $gif3 eq '') {
     }
 }
 
-$mw0->Button(-text => "OK", -command => sub { $mw0->destroy })->pack;
+$mw0->Button(-text => "OK", -command => sub { $mw0->destroy })->pack
+    if $ENV{PERL_TEST_INTERACTIVE};
 
 if (!$ENV{PERL_TEST_INTERACTIVE}) { $mw0->after(1000, sub { $mw0->destroy }) }
 

@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 80tktest.t,v 1.10 2003/11/10 22:02:21 eserte Exp $
+# $Id: 80tktest.t,v 1.12 2004/04/15 23:24:38 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -30,7 +30,8 @@ BEGIN { plan tests => 10 }
 
 my $mw0 = MainWindow->new;
 my $wait = 0;
-$mw0->Button(-text => "OK", -command => sub { $wait = 1 })->pack(-side => "bottom");
+$mw0->Button(-text => "OK", -command => sub { $wait = 1 })->pack(-side => "bottom")
+    if $ENV{PERL_TEST_INTERACTIVE};
 
 for my $transparency (0 .. 1) {
     my $mw = $mw0->Frame->pack;
@@ -80,10 +81,10 @@ for my $transparency (0 .. 1) {
     $mw->Label(-image => $p3)->grid(-row=>$row,-column=>$col++);
 
     my $gif = $im->gif_netpbm(-transparencyhack => $transparency);
-    if ($gif eq '') {
+    if (!defined $gif || $gif eq '') {
 	skip(1,1); # probably no netpbm installed
     } else {
-	ok($gif, qr/GIF/);
+	ok($gif =~ /GIF/);
 	if (eval 'require MIME::Base64; 1') {
 	    my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
 	    $mw->Label(-text => "gif (netpbm)")->grid(-row=>$row+1,-column=>$col);
@@ -102,7 +103,7 @@ for my $transparency (0 .. 1) {
     if (!defined $gif3 || $gif3 eq '') {
 	skip(1,1); # probably no imagemagick installed
     } else {
-	ok($gif3, qr/GIF/);
+	ok($gif3 =~ /GIF/);
 	if (eval 'require MIME::Base64; 1') {
 	    my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
 	    $mw->Label(-text => "gif (imagemagick)")->grid(-row=>$row+1,-column=>$col);

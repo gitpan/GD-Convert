@@ -1,5 +1,11 @@
 Revision history for Perl extension GD::Convert.
 
+2.11
+	- removed accidental debugging code
+	- rephrased parts of the Pod 
+	- ppmtogif conversion is now always silent
+	- tests are more robust on systems with old perl and old GD
+
 2.08
 	- test fix
 

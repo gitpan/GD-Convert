@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 30newfrom.t,v 1.3 2003/05/29 22:17:34 eserte Exp $
+# $Id: 30newfrom.t,v 1.5 2004/04/15 23:25:01 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -10,17 +10,28 @@ use strict;
 use FindBin;
 
 use GD;
-use GD::Convert qw(gif=any newFromGif=any newFromGifData=any);
 
 $GD::Convert::DEBUG = 0;
 
 BEGIN {
     if (!eval q{
 	use Test;
+	GD::Image->can("compare") or die;
 	1;
     }) {
-	print "1..0 # skip: no Test module\n";
+	print "1..0 # skip: no Test module or GD::Image does not support compare\n";
 	exit;
+    }
+
+    if (!eval q{
+	use GD::Convert qw(gif=any newFromGif=any newFromGifData=any);
+	1;
+    }) {
+	if ($@ =~ /Can't find any converter for gif/) {
+	    print "1..0 # skip: no gif converter available on this system\n";
+	    exit;
+	}
+	die $@;
     }
 }
 

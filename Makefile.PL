@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: Makefile.PL,v 1.5 2003/10/22 21:35:42 eserte Exp $
+# $Id: Makefile.PL,v 1.6 2003/11/20 18:41:54 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001 Slaven Rezic. All rights reserved.
@@ -30,7 +30,7 @@ WriteMakefile
 sub MY::postamble {
     my $postamble = "";
 
-    if (defined $ENV{USER} && $ENV{USER} eq 'eserte') {
+    if (defined $ENV{USER} && $ENV{USER} eq 'eserte' && $^O =~ /bsd/i && -f "../../perl.release.mk") {
 	$postamble .= <<'EOF';
 
 .include "../../perl.release.mk"
