@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 2.2 2003/05/29 22:02:45 eserte Exp $
+# $Id: Convert.pm,v 2.3 2003/05/29 22:18:05 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001,2003 Slaven Rezic. All rights reserved.
@@ -16,7 +16,7 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION $DEBUG);
-$VERSION = sprintf("%d.%02d", q$Revision: 2.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 2.3 $ =~ /(\d+)\.(\d+)/);
 
 sub import {
     my($pkg, @args) = @_;
@@ -243,10 +243,7 @@ sub newFromPpmData {
 
 sub newFromPpm {
     my($self, $file, $truecolor) = @_;
-    open(FH, $file) or die "Can't open $file: $!";
-    local $/ = undef;
-    my $data = <FH>;
-    close FH;
+    my $data = _data_from_file($file);
     $self->newFromPpmData($data, $truecolor);
 }
 
@@ -364,10 +361,7 @@ sub _newFromGif_external {
 
     if ($source_type eq 'file') {
 	# $data is a file name
-	open(FH, $data) or die "Can't open $data: $!";
-	local $/ = undef;
-	$data = <FH>;
-	close FH;
+	$data = _data_from_file($data);
     }
 
     my @cmd;
@@ -457,6 +451,24 @@ sub _wbmp {
     }
 }
 
+sub _data_from_file {
+    my $file = shift;
+    my $FH;
+    my $do_close;
+    if (ref $file eq 'GLOB' || UNIVERSAL::isa($file, 'IO::Handle')) {
+	$FH = $file;
+    } else {
+	no strict 'refs';
+	$FH = "FH";
+	open($FH, $file) or die "Can't open $file: $!";
+	$do_close = 1;
+    }
+    local $/ = undef;
+    my $data = <$FH>;
+    close $FH if $do_close;
+    $data;
+}
+
 1;
 
 __END__
@@ -540,8 +552,8 @@ program of ImageMagick.
 
 =item $image = GD::Image->newFromPpm($file, [$truecolor])
 
-Create a GD image from the named ppm file, Only raw ppm files
-(signature P6) are supported.
+Create a GD image from the named ppm file or filehandle reference.
+Only raw ppm files (signature P6) are supported.
 
 =item $image = GD::Image->newFromPpmData($data, [$truecolor])
 
@@ -550,7 +562,8 @@ ppm files are supported.
 
 =item $image = GD::Image->newFromGif_netpbm($file, [$truecolor]);
 
-Create a GD image from the named file using external netpbm programs.
+Create a GD image from the named file or filehandle reference using
+external netpbm programs.
 
 =item $image = GD::Image->newFromGifData_netpbm($file, [$truecolor]);
 
@@ -558,8 +571,8 @@ Create a GD image from the data string using external netpbm programs.
 
 =item $image = GD::Image->newFromGif_imagemagick($file, [$truecolor]);
 
-Create a GD image from the named file using external ImageMagick
-programs.
+Create a GD image from the named file or filehandle reference using
+external ImageMagick programs.
 
 =item $image = GD::Image->newFromGifData_imagemagick($file, [$truecolor]);
 
