@@ -4,5 +4,6 @@ MANIFEST
 Makefile.PL
 README
 t/20import.t
+t/30newfrom.t
 t/80tktest.t
 t/81transparency.t
