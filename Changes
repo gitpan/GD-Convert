@@ -1,5 +1,8 @@
 Revision history for Perl extension GD::Convert.
 
+2.08
+	- test fix
+
 2.07
 	- compatibility fix for perl 5.00503 and GD 1.37
 

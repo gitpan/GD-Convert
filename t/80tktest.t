@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 80tktest.t,v 1.9 2003/07/13 13:15:21 eserte Exp $
+# $Id: 80tktest.t,v 1.10 2003/11/10 22:02:21 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -66,18 +66,18 @@ for my $transparency (0 .. 1) {
 
     my $row = 0;
     my $col = 0;
-    $mw->Label(-text => "ppm")->grid(-row=>$row+1,-col=>$col);
-    $mw->Label(-image => $p)->grid(-row=>$row,-col=>$col++);
+    $mw->Label(-text => "ppm")->grid(-row=>$row+1,-column=>$col);
+    $mw->Label(-image => $p)->grid(-row=>$row,-column=>$col++);
 
     my $xpm = $im->xpm;
     ok((split /\n/, $xpm)[0] =~ /XPM/, 1);
     my $p2 = $mw->Photo(-data => $xpm);
-    $mw->Label(-text => "xpm photo")->grid(-row=>$row+1,-col=>$col);
-    $mw->Label(-image => $p2)->grid(-row=>$row,-col=>$col++);
+    $mw->Label(-text => "xpm photo")->grid(-row=>$row+1,-column=>$col);
+    $mw->Label(-image => $p2)->grid(-row=>$row,-column=>$col++);
 
     my $p3 = $mw->Pixmap(-data => $xpm);
-    $mw->Label(-text => "xpm pixmap")->grid(-row=>$row+1,-col=>$col);
-    $mw->Label(-image => $p3)->grid(-row=>$row,-col=>$col++);
+    $mw->Label(-text => "xpm pixmap")->grid(-row=>$row+1,-column=>$col);
+    $mw->Label(-image => $p3)->grid(-row=>$row,-column=>$col++);
 
     my $gif = $im->gif_netpbm(-transparencyhack => $transparency);
     if ($gif eq '') {
@@ -86,8 +86,8 @@ for my $transparency (0 .. 1) {
 	ok($gif, qr/GIF/);
 	if (eval 'require MIME::Base64; 1') {
 	    my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-	    $mw->Label(-text => "gif (netpbm)")->grid(-row=>$row+1,-col=>$col);
-	    $mw->Label(-image => $p4)->grid(-row=>$row,-col=>$col++);
+	    $mw->Label(-text => "gif (netpbm)")->grid(-row=>$row+1,-column=>$col);
+	    $mw->Label(-image => $p4)->grid(-row=>$row,-column=>$col++);
 	}
     }
 
@@ -105,8 +105,8 @@ for my $transparency (0 .. 1) {
 	ok($gif3, qr/GIF/);
 	if (eval 'require MIME::Base64; 1') {
 	    my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-	    $mw->Label(-text => "gif (imagemagick)")->grid(-row=>$row+1,-col=>$col);
-	    $mw->Label(-image => $p5)->grid(-row=>$row,-col=>$col++);
+	    $mw->Label(-text => "gif (imagemagick)")->grid(-row=>$row+1,-column=>$col);
+	    $mw->Label(-image => $p5)->grid(-row=>$row,-column=>$col++);
 	}
     }
 
