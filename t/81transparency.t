@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 81transparency.t,v 1.5 2002/08/06 15:26:36 eserte Exp $
+# $Id: 81transparency.t,v 1.6 2003/07/13 13:15:28 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -88,7 +88,7 @@ if (!defined $gif3 || $gif3 eq '') {
 
 $mw0->Button(-text => "OK", -command => sub { $mw0->destroy })->pack;
 
-if ($ENV{BATCH}) { $mw0->after(1000, sub { $mw0->destroy }) }
+if (!$ENV{PERL_TEST_INTERACTIVE}) { $mw0->after(1000, sub { $mw0->destroy }) }
 
 MainLoop;
 

@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 80tktest.t,v 1.8 2003/02/07 11:38:05 eserte Exp $
+# $Id: 80tktest.t,v 1.9 2003/07/13 13:15:21 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -111,7 +111,7 @@ for my $transparency (0 .. 1) {
     }
 
     $wait = 0;
-    if ($ENV{BATCH}) {
+    if (!$ENV{PERL_TEST_INTERACTIVE}) {
 	$mw0->after(1000, sub { $wait = 1 });
     }
     $mw0->waitVariable(\$wait);
