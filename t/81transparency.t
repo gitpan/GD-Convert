@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 81transparency.t,v 1.4 2002/02/27 23:04:02 eserte Exp $
+# $Id: 81transparency.t,v 1.5 2002/08/06 15:26:36 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -15,6 +15,8 @@ BEGIN {
     if (!eval q{
 	use Test;
         use Tk;
+	use Tk::Config;
+	die "No DISPLAY" if $win_arch eq 'x' && !$ENV{DISPLAY};
 	1;
     }) {
 	print "# tests only work with installed Test and Tk modules\n";

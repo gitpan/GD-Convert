@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 1.17 2002/02/27 23:02:36 eserte Exp $
+# $Id: Convert.pm,v 1.18 2002/08/06 15:25:56 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001 Slaven Rezic. All rights reserved.
@@ -16,37 +16,37 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.18 $ =~ /(\d+)\.(\d+)/);
 
 sub import {
     my($pkg, @args) = @_;
     foreach my $arg (@args) {
 	my($f, $as) = split /=/, $arg;
-	if ($f eq 'gif') {
+	if ($f =~ /^(gif|newFromGif)$/) {
 	    if ($as eq 'any') {
+		# check whether GD handles the gif itself
 		if ($GD::VERSION <= 1.19 ||
-		    ($GD::VERSION >= 1.37 && GD::Image->can('gif'))) {
+		    ($GD::VERSION >= 1.37 && $GD::VERSION < 1.40 && GD::Image->can($f))) {
 		    undef $as;
-		} elsif (is_in_path("ppmtogif")) {
-		    $as = "gif_netpbm";
-		} elsif ($^O ne 'MSWin32' && is_in_path("convert")) {
-		    # convert is a special command on MSWin32
-		    $as = "gif_imagemagick";
-		} else {
-		    die "Can't find any GIF converter for $f in $ENV{PATH}";
+		} elsif ($GD::VERSION >= 1.40 && GD::Image->can($f)) {
+		    $@ = "";
+		    GD::Image->new->$f();
+		    if ($@ !~ /libgd was not built with gif support/) {
+			undef $as;
+		    }
 		}
-	    }
-	} elsif ($f eq 'newFromGif') {
-	    if ($as eq 'any') {
-		if ($GD::VERSION <= 1.19 ||
-		    ($GD::VERSION >= 1.37 && GD::Image->can('newFromGif'))) {
-		    undef $as;
-		} elsif (is_in_path("giftopnm")) {
-		    $as = "newFromGif_netpbm";
-		} elsif (is_in_path("convert")) {
-		    $as = "newFromGif_imagemagick";
-		} else {
-		    die "Can't find any GIF converter for $f in $ENV{PATH}";
+		# No? Then try alternatives
+		if (defined $as) {
+		    if ($f eq 'gif' && is_in_path("ppmtogif")) {
+			$as = $f . "_netpbm";
+		    } elsif ($f eq 'newFromGif' && is_in_path("giftopnm")) {
+			$as = $f . "_netpbm";
+		    } elsif ($^O ne 'MSWin32' && is_in_path("convert")) {
+			# convert is a special command on MSWin32
+			$as = $f . "_imagemagick";
+		    } else {
+			die "Can't find any GIF converter for $f in $ENV{PATH}";
+		    }
 		}
 	    }
 	} else {
@@ -62,9 +62,12 @@ sub import {
 		$prototype = "($prototype)";
 	    }
 	    my $code = "sub $sub $prototype { shift->$as(\@_) }";
+	    if ($] >= 5.006) { # has warnings
+		$code = "{ no warnings qw(redefine); $code; }";
+	    }
 	    #warn $code;
 	    eval $code;
-	    die $@ if $@;
+	    die "$code\n\nfailed with: $@" if $@;
 	}
     }
 }

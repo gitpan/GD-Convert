@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 80tktest.t,v 1.6 2002/02/27 23:04:01 eserte Exp $
+# $Id: 80tktest.t,v 1.7 2002/08/06 15:26:30 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -15,6 +15,8 @@ BEGIN {
     if (!eval q{
 	use Test;
         use Tk;
+	use Tk::Config;
+	die "No DISPLAY" if $win_arch eq 'x' && !$ENV{DISPLAY};
 	1;
     }) {
 	print "# tests only work with installed Test and Tk modules\n";

@@ -12,10 +12,16 @@ To install, type
 	$ perl Makefile.PL
 	$ make
 	$ make install
+	$ make test
 
 For Windows NT and ActiveState Perl, replace "make" with "nmake".
 Otherwise, just copy Convert.pm to C:\Perl\site\lib\GD (create this
 directory if not existing).
+
+Some tests are interactive if Tk is installed. If you don't like this,
+define either the environment variable DISPLAY="" (so there are no Tk
+related tests at all) or BATCH="yes" (the Tk tests will run, but the
+user does not have to click on a button to exit the test programs).
 
 Send bug reports, comments and suggestions to slaven.rezic@berlin.de
 
