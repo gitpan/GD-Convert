@@ -1,5 +1,11 @@
 Revision history for Perl extension GD::Convert.
 
+2.07
+	- compatibility fix for perl 5.00503 and GD 1.37
+
+2.06
+	- fixed multiple import calls
+
 2.05
 	- workaround for mod_perl (use temporary files instead of
 	  IPC::Open3)

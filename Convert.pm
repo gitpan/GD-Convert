@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 2.6 2003/07/13 13:15:48 eserte Exp $
+# $Id: Convert.pm,v 2.7 2003/11/09 23:07:02 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001,2003 Slaven Rezic. All rights reserved.
@@ -16,7 +16,7 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION $DEBUG %installed);
-$VERSION = sprintf("%d.%02d", q$Revision: 2.6 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 2.7 $ =~ /(\d+)\.(\d+)/);
 
 $DEBUG = 0 if !defined $DEBUG;
 
@@ -28,7 +28,8 @@ sub import {
 	    if (!defined $as || $as eq 'any') {
 		# check whether GD handles the gif itself
 		if ($GD::VERSION <= 1.19 ||
-		    ($GD::VERSION >= 1.37 && $GD::VERSION < 1.40 && GD::Image->can($f))) {
+		    ($GD::VERSION >= 1.37 && $GD::VERSION < 1.40 && !$installed{"gif"} && GD::Image->can("gif")) # better check for "gif" than for $f
+		   ) {
 		    undef $as;
 		} elsif ($GD::VERSION >= 1.40 && !$installed{$f} && GD::Image->can($f)) {
 		    $@ = "";
@@ -426,6 +427,7 @@ sub _wbmp {
 
 sub _data_from_file {
     my $file = shift;
+    no strict 'refs'; # for perl 5.00503
     my $FH;
     my $do_close;
     if (ref $file eq 'GLOB' || UNIVERSAL::isa($file, 'IO::Handle')) {
