@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 80tktest.t,v 1.7 2002/08/06 15:26:30 eserte Exp $
+# $Id: 80tktest.t,v 1.8 2003/02/07 11:38:05 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -26,74 +26,96 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 5 }
+BEGIN { plan tests => 10 }
 
 my $mw0 = MainWindow->new;
-my $mw = $mw0->Frame->pack;
+my $wait = 0;
+$mw0->Button(-text => "OK", -command => sub { $wait = 1 })->pack(-side => "bottom");
 
-my $im = new GD::Image 200,200;
-my $white = $im->colorAllocate(255,255,255);
-my $black = $im->colorAllocate(0,0,0);
-my $red = $im->colorAllocate(255,0,0);
-my $blue = $im->colorAllocate(0,0,255);
-$im->rectangle(0,0,99,99,$black);
-$im->arc(50,50,95,75,0,360,$blue);
-$im->fill(50,50,$red);
-
-my $ppm = $im->ppm;
-ok(substr($ppm, 0, 2), "P6");
-my $ppm_file = "test.ppm";
-open(PPM, "> $ppm_file") or die "Can't write to $ppm_file: $!";
-binmode PPM;
-print PPM $ppm;
-close PPM;
-
-my $p = $mw->Photo(-file => $ppm_file);
-unlink $ppm_file;
-
-$mw->Label(-image => $p)->pack(-side => "left");
-
-my $xpm = $im->xpm;
-ok((split /\n/, $xpm)[0] =~ /XPM/, 1);
-my $p2 = $mw->Photo(-data => $xpm);
-$mw->Label(-image => $p2)->pack(-side => "left");
-
-my $p3 = $mw->Pixmap(-data => $xpm);
-$mw->Label(-image => $p3)->pack(-side => "left");
-
-my $gif = $im->gif_netpbm;
-if ($gif eq '') {
-    skip(1,1); # probably no netpbm installed
-} else {
-    ok($gif =~ /GIF/, 1);
-    if (eval 'require MIME::Base64; 1') {
-	my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-	$mw->Label(-image => $p4)->pack(-side => "left");
+for my $transparency (0 .. 1) {
+    my $mw = $mw0->Frame->pack;
+    my $im = new GD::Image 200,200;
+    my $white = $im->colorAllocate(255,255,255);
+    my $black = $im->colorAllocate(0,0,0);
+    my $red = $im->colorAllocate(255,0,0);
+    my $blue = $im->colorAllocate(0,0,255);
+    $im->rectangle(0,0,99,99,$black);
+    $im->arc(50,50,95,75,0,360,$blue);
+    $im->fill(50,50,$red);
+    if ($transparency) {
+	$im->transparent($white);
+	$im->string(gdMediumBoldFont, 10,100, "transparent background", $blue);
+    } else {
+	$im->string(gdMediumBoldFont, 10,100, "white background", $blue);
     }
-}
+    $im->string(gdMediumBoldFont, 10,110, "black rectangle", $blue);
+    $im->string(gdMediumBoldFont, 10,120, "black oval with blue outline", $blue);
 
-my $gif2 = $im->gif;
-if (!defined $gif2 || $gif2 eq '') {
-    skip(1,1); # probably no netpbm installed
-} else {
-    ok($gif, $gif2);
-}
+    #open(TEST, ">/tmp/80tktest.gd");print TEST $im->gd;close TEST;system("gdtopng /tmp/80tktest.gd /tmp/80tktest.png"); system("display /tmp/80tktest.png &");
 
-my $gif3 = $im->gif_imagemagick;
-if (!defined $gif3 || $gif3 eq '') {
-    skip(1,1); # probably no imagemagick installed
-} else {
-    ok($gif3 =~ /GIF/, 1);
-    if (eval 'require MIME::Base64; 1') {
-	my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-	$mw->Label(-image => $p5)->pack(-side => "left");
+    my $ppm = $im->ppm;
+    ok(substr($ppm, 0, 2), "P6");
+    my $ppm_file = "test.ppm";
+    open(PPM, "> $ppm_file") or die "Can't write to $ppm_file: $!";
+    binmode PPM;
+    print PPM $ppm;
+    close PPM;
+
+    my $p = $mw->Photo(-file => $ppm_file);
+    unlink $ppm_file;
+
+    my $row = 0;
+    my $col = 0;
+    $mw->Label(-text => "ppm")->grid(-row=>$row+1,-col=>$col);
+    $mw->Label(-image => $p)->grid(-row=>$row,-col=>$col++);
+
+    my $xpm = $im->xpm;
+    ok((split /\n/, $xpm)[0] =~ /XPM/, 1);
+    my $p2 = $mw->Photo(-data => $xpm);
+    $mw->Label(-text => "xpm photo")->grid(-row=>$row+1,-col=>$col);
+    $mw->Label(-image => $p2)->grid(-row=>$row,-col=>$col++);
+
+    my $p3 = $mw->Pixmap(-data => $xpm);
+    $mw->Label(-text => "xpm pixmap")->grid(-row=>$row+1,-col=>$col);
+    $mw->Label(-image => $p3)->grid(-row=>$row,-col=>$col++);
+
+    my $gif = $im->gif_netpbm(-transparencyhack => $transparency);
+    if ($gif eq '') {
+	skip(1,1); # probably no netpbm installed
+    } else {
+	ok($gif, qr/GIF/);
+	if (eval 'require MIME::Base64; 1') {
+	    my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
+	    $mw->Label(-text => "gif (netpbm)")->grid(-row=>$row+1,-col=>$col);
+	    $mw->Label(-image => $p4)->grid(-row=>$row,-col=>$col++);
+	}
     }
+
+    my $gif2 = $im->gif(-transparencyhack => $transparency);
+    if (!defined $gif2 || $gif2 eq '') {
+	skip(1,1); # probably no netpbm installed
+    } else {
+	ok($gif, $gif2);
+    }
+
+    my $gif3 = $im->gif_imagemagick(-transparencyhack => $transparency);
+    if (!defined $gif3 || $gif3 eq '') {
+	skip(1,1); # probably no imagemagick installed
+    } else {
+	ok($gif3, qr/GIF/);
+	if (eval 'require MIME::Base64; 1') {
+	    my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
+	    $mw->Label(-text => "gif (imagemagick)")->grid(-row=>$row+1,-col=>$col);
+	    $mw->Label(-image => $p5)->grid(-row=>$row,-col=>$col++);
+	}
+    }
+
+    $wait = 0;
+    if ($ENV{BATCH}) {
+	$mw0->after(1000, sub { $wait = 1 });
+    }
+    $mw0->waitVariable(\$wait);
+    $mw->destroy;
 }
-
-$mw0->Button(-text => "OK", -command => sub { $mw0->destroy })->pack;
-
-if ($ENV{BATCH}) { $mw0->after(1000, sub { $mw0->destroy }) }
-
-MainLoop;
 
 __END__

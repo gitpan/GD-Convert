@@ -1,5 +1,8 @@
 Revision history for Perl extension GD::Convert.
 
+2.01
+	- GD 2.x support
+
 1.17
 	- test cleanups (should now pass all tests on MSWin32)
 

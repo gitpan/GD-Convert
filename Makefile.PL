@@ -2,14 +2,14 @@
 # -*- perl -*-
 
 #
-# $Id: Makefile.PL,v 1.3 2002/08/06 15:26:18 eserte Exp $
+# $Id: Makefile.PL,v 1.4 2003/02/07 11:39:33 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001 Slaven Rezic. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
-# Mail: slaven.rezic@berlin.de
+# Mail: slaven@rezic.de
 # WWW:  http://www.rezic.de/eserte/
 #
 
@@ -24,7 +24,7 @@ WriteMakefile
    'dist' => {'POSTOP'=>'-$(CHMOD) 644 $(DISTVNAME).tar$(SUFFIX)'},
 
    'ABSTRACT_FROM' => '',
-   'AUTHOR'        => 'Slaven Rezic (slaven.rezic@berlin.de)',
+   'AUTHOR'        => 'Slaven Rezic (slaven@rezic.de)',
   );
 
 sub MY::postamble {

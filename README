@@ -23,5 +23,5 @@ define either the environment variable DISPLAY="" (so there are no Tk
 related tests at all) or BATCH="yes" (the Tk tests will run, but the
 user does not have to click on a button to exit the test programs).
 
-Send bug reports, comments and suggestions to slaven.rezic@berlin.de
+Send bug reports, comments and suggestions to slaven@rezic.de
 
