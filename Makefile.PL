@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: Makefile.PL,v 1.1 2001/11/22 22:14:11 eserte Exp $
+# $Id: Makefile.PL,v 1.2 2002/02/27 23:05:50 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001 Slaven Rezic. All rights reserved.
@@ -26,5 +26,15 @@ WriteMakefile
    'ABSTRACT_FROM' => '',
    'AUTHOR'        => 'Slaven Rezic (eserte@onlineoffice.de)',
   );
+
+sub MY::postamble {
+    if (defined $ENV{USER} && $ENV{USER} eq 'eserte') {
+	<<'EOF';
+release :: dist
+	cpan-upload $(DISTVNAME).tar$(SUFFIX)
+
+EOF
+    }
+}
 
 __END__

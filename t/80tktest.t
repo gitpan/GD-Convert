@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 80tktest.t,v 1.5 2001/11/28 23:02:15 eserte Exp $
+# $Id: 80tktest.t,v 1.6 2002/02/27 23:04:01 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -26,7 +26,8 @@ BEGIN {
 
 BEGIN { plan tests => 5 }
 
-my $mw = MainWindow->new;
+my $mw0 = MainWindow->new;
+my $mw = $mw0->Frame->pack;
 
 my $im = new GD::Image 200,200;
 my $white = $im->colorAllocate(255,255,255);
@@ -59,23 +60,37 @@ my $p3 = $mw->Pixmap(-data => $xpm);
 $mw->Label(-image => $p3)->pack(-side => "left");
 
 my $gif = $im->gif_netpbm;
-ok($gif =~ /GIF/, 1);
-if (eval 'require MIME::Base64; 1') {
-    my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-    $mw->Label(-image => $p4)->pack(-side => "left");
+if ($gif eq '') {
+    skip(1,1); # probably no netpbm installed
+} else {
+    ok($gif =~ /GIF/, 1);
+    if (eval 'require MIME::Base64; 1') {
+	my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
+	$mw->Label(-image => $p4)->pack(-side => "left");
+    }
 }
 
 my $gif2 = $im->gif;
-ok($gif, $gif2);
-
-my $gif3 = $im->gif_imagemagick;
-ok($gif3 =~ /GIF/, 1);
-if (eval 'require MIME::Base64; 1') {
-    my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-    $mw->Label(-image => $p5)->pack(-side => "left");
+if (!defined $gif2 || $gif2 eq '') {
+    skip(1,1); # probably no netpbm installed
+} else {
+    ok($gif, $gif2);
 }
 
-if ($ENV{BATCH}) { $mw->after(1000, sub { $mw->destroy }) }
+my $gif3 = $im->gif_imagemagick;
+if (!defined $gif3 || $gif3 eq '') {
+    skip(1,1); # probably no imagemagick installed
+} else {
+    ok($gif3 =~ /GIF/, 1);
+    if (eval 'require MIME::Base64; 1') {
+	my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
+	$mw->Label(-image => $p5)->pack(-side => "left");
+    }
+}
+
+$mw0->Button(-text => "OK", -command => sub { $mw0->destroy })->pack;
+
+if ($ENV{BATCH}) { $mw0->after(1000, sub { $mw0->destroy }) }
 
 MainLoop;
 

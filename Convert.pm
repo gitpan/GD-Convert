@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 1.16 2002/01/24 08:39:37 eserte Exp $
+# $Id: Convert.pm,v 1.17 2002/02/27 23:02:36 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001 Slaven Rezic. All rights reserved.
@@ -16,7 +16,7 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf("%d.%02d", q$Revision: 1.16 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 1.17 $ =~ /(\d+)\.(\d+)/);
 
 sub import {
     my($pkg, @args) = @_;
@@ -29,7 +29,8 @@ sub import {
 		    undef $as;
 		} elsif (is_in_path("ppmtogif")) {
 		    $as = "gif_netpbm";
-		} elsif (is_in_path("convert")) {
+		} elsif ($^O ne 'MSWin32' && is_in_path("convert")) {
+		    # convert is a special command on MSWin32
 		    $as = "gif_imagemagick";
 		} else {
 		    die "Can't find any GIF converter for $f in $ENV{PATH}";
@@ -111,7 +112,8 @@ sub file_name_is_absolute {
 }
 # REPO END
 
-package GD::Image;
+package
+    GD::Image;
 
 sub xpm {
     my $im = shift;

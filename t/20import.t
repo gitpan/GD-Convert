@@ -2,21 +2,21 @@
 # -*- perl -*-
 
 #
-# $Id: 20import.t,v 1.1 2001/11/28 23:13:00 eserte Exp $
+# $Id: 20import.t,v 1.2 2002/02/27 23:03:59 eserte Exp $
 # Author: Slaven Rezic
 #
 
 use strict;
 
 use GD;
-use GD::Convert 'gif=any';
 
 BEGIN {
     if (!eval q{
+	use GD::Convert 'gif=any';
 	use Test;
 	1;
     }) {
-	print "# tests only work with installed Test module\n";
+	print "# tests only work with installed Test module and some gif converter on your system\n";
 	print "1..1\n";
 	print "ok 1\n";
 	exit;

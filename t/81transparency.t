@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 81transparency.t,v 1.3 2001/11/29 16:58:47 eserte Exp $
+# $Id: 81transparency.t,v 1.4 2002/02/27 23:04:02 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -28,7 +28,8 @@ BEGIN { plan tests => 4 }
 
 my $images = 4;
 
-my $mw = MainWindow->new;
+my $mw0 = MainWindow->new;
+my $mw = $mw0->Frame->pack;
 my $c = $mw->Canvas(-width => $images*200, -height => 200,
 		    -highlightthickness => 0)->pack;
 
@@ -46,17 +47,25 @@ $c->createLine(0,0,$c->cget(-width),$c->cget(-height),-width=>3,-fill=>"blue");
 $c->createLine(0,$c->cget(-height),$c->cget(-width),0,-width=>3,-fill=>"blue");
 
 my $gif = $im->gif_netpbm(-transparencyhack => 1);
-ok($gif =~ /GIF/, 1);
-if (eval 'require MIME::Base64; 1') {
-    my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-    $c->createImage(0,0,-anchor=>"nw", -image => $p4);
+if ($gif eq '') {
+    skip(1,1); # probably no netpbm installed
+} else {
+    ok($gif =~ /GIF/, 1);
+    if (eval 'require MIME::Base64; 1') {
+	my $p4 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
+	$c->createImage(0,0,-anchor=>"nw", -image => $p4);
+    }
 }
 
 my $gif2 = $im->gif_imagemagick(-transparencyhack => 1);
-ok($gif2 =~ /GIF/, 1);
-if (eval 'require MIME::Base64; 1') {
-    my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif2));
-    $c->createImage(200,0,-anchor=>"nw", -image => $p5);
+if (!defined $gif2 || $gif2 eq '') {
+    skip(1,1); # probably no imagemagick installed
+} else {
+    ok($gif2 =~ /GIF/, 1);
+    if (eval 'require MIME::Base64; 1') {
+	my $p5 = $mw->Photo(-data => MIME::Base64::encode_base64($gif2));
+	$c->createImage(200,0,-anchor=>"nw", -image => $p5);
+    }
 }
 
 my $xpm = $im->xpm;
@@ -65,13 +74,19 @@ my $p6 = $mw->Photo(-data => $xpm);
 $c->createImage(400,0,-anchor=>"nw", -image => $p6);
 
 my $gif3 = $im->gif_imagemagick;
-ok($gif =~ /GIF/, 1);
-if (eval 'require MIME::Base64; 1') {
-    my $p7 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
-    $c->createImage(600,0,-anchor=>"nw", -image => $p7);
+if (!defined $gif3 || $gif3 eq '') {
+    skip(1,1); # probably no imagemagick installed
+} else {
+    ok($gif =~ /GIF/, 1);
+    if (eval 'require MIME::Base64; 1') {
+	my $p7 = $mw->Photo(-data => MIME::Base64::encode_base64($gif));
+	$c->createImage(600,0,-anchor=>"nw", -image => $p7);
+    }
 }
 
-if ($ENV{BATCH}) { $mw->after(1000, sub { $mw->destroy }) }
+$mw0->Button(-text => "OK", -command => sub { $mw0->destroy })->pack;
+
+if ($ENV{BATCH}) { $mw0->after(1000, sub { $mw0->destroy }) }
 
 MainLoop;
 
