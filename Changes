@@ -1,5 +1,9 @@
 Revision history for Perl extension GD::Convert.
 
+2.05
+	- workaround for mod_perl (use temporary files instead of
+	  IPC::Open3)
+
 2.04
 	- support for wbmp output
 
