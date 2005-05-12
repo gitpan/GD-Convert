@@ -1,5 +1,8 @@
 Revision history for Perl extension GD::Convert.
 
+2.12
+	- support for GD 2.15
+
 2.11
 	- removed accidental debugging code
 	- rephrased parts of the Pod 

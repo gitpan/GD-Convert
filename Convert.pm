@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 2.11 2004/04/15 23:25:16 eserte Exp $
+# $Id: Convert.pm,v 2.12 2005/05/12 20:37:59 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001,2003 Slaven Rezic. All rights reserved.
@@ -16,7 +16,7 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION $DEBUG %installed);
-$VERSION = sprintf("%d.%02d", q$Revision: 2.11 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 2.12 $ =~ /(\d+)\.(\d+)/);
 
 $DEBUG = 0 if !defined $DEBUG;
 
@@ -31,9 +31,11 @@ sub import {
 		    ($GD::VERSION >= 1.37 && $GD::VERSION < 1.40 && !$installed{"gif"} && GD::Image->can("gif")) # better check for "gif" than for $f
 		   ) {
 		    undef $as;
+		} elsif ($GD::VERSION >= 2.15) {
+		    # hmmm ...
 		} elsif ($GD::VERSION >= 1.40 && !$installed{$f} && GD::Image->can($f)) {
 		    $@ = "";
-		    GD::Image->new->$f();
+		    eval { GD::Image->new->$f(); };
 		    if ($@ !~ /libgd was not built with gif support/) {
 			undef $as;
 		    }
