@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: Makefile.PL,v 1.6 2003/11/20 18:41:54 eserte Exp $
+# $Id: Makefile.PL,v 1.7 2006/09/09 15:30:10 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001 Slaven Rezic. All rights reserved.
@@ -20,6 +20,7 @@ WriteMakefile
    'NAME'	   => 'GD::Convert',
    'VERSION_FROM'  => 'Convert.pm',
    'PREREQ_PM'     => { GD => 0 },
+   'NO_META'       => 1,
 
    'dist' => {'POSTOP'=>'-$(CHMOD) 644 $(DISTVNAME).tar$(SUFFIX)'},
 

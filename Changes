@@ -1,5 +1,8 @@
 Revision history for Perl extension GD::Convert.
 
+2.13
+	- fixed test failures if netpbm was not installed
+
 2.12
 	- support for GD 2.15
 
