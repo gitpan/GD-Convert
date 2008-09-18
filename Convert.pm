@@ -1,7 +1,7 @@
 # -*- perl -*-
 
 #
-# $Id: Convert.pm,v 2.14 2008/07/23 18:52:03 eserte Exp $
+# $Id: Convert.pm,v 2.15 2008/09/18 22:27:57 eserte Exp $
 # Author: Slaven Rezic
 #
 # Copyright (C) 2001,2003,2008 Slaven Rezic. All rights reserved.
@@ -16,7 +16,7 @@ package GD::Convert;
 
 use strict;
 use vars qw($VERSION $DEBUG %installed);
-$VERSION = sprintf("%d.%02d", q$Revision: 2.14 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q$Revision: 2.15 $ =~ /(\d+)\.(\d+)/);
 
 $DEBUG = 0 if !defined $DEBUG;
 
@@ -79,7 +79,7 @@ sub import {
 	    #warn $code;
 	    eval $code;
 	    die "$code\n\nfailed with: $@" if $@;
-	    $installed{$f}++;
+	    $installed{$f} = $as;
 	}
     }
 }

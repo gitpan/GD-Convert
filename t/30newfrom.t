@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 30newfrom.t,v 1.5 2004/04/15 23:25:01 eserte Exp $
+# $Id: 30newfrom.t,v 1.7 2008/09/18 22:27:39 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -15,11 +15,12 @@ $GD::Convert::DEBUG = 0;
 
 BEGIN {
     if (!eval q{
-	use Test;
+	use Test::More;
+	use File::Temp qw(tempfile);
 	GD::Image->can("compare") or die;
 	1;
     }) {
-	print "1..0 # skip: no Test module or GD::Image does not support compare\n";
+	print "1..0 # skip: no Test::More and/or File::Temp modules or GD::Image does not support compare\n";
 	exit;
     }
 
@@ -35,7 +36,12 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 8 }
+plan tests => 8;
+
+diag "";
+while(my($k,$v) = each %GD::Convert::installed) {
+    diag "$k -> $v";
+}
 
 my $gd = GD::Image->new(100,100);
 my $black = $gd->colorAllocate(0,0,0);
@@ -49,10 +55,12 @@ my $ppm_data = $gd->ppm;
 
 {
     my $gd2 = GD::Image->newFromPpmData($ppm_data);
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "PPM output and input (data)");
 }
 
-my $ppm_file = "$FindBin::RealBin/test.ppm";
+my(undef, $ppm_file) = tempfile(UNLINK => 1, SUFFIX => ".ppm");
+die "Cannot create temporary file: $!" if !$ppm_file;
+
 open(OUT, ">$ppm_file") or die "Can't write $ppm_file: $!";
 binmode OUT;
 print OUT $ppm_data;
@@ -60,7 +68,7 @@ close OUT;
 
 {
     my $gd2 = GD::Image->newFromPpm($ppm_file);
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "PPM input (file)");
 }
 
 {
@@ -68,7 +76,7 @@ close OUT;
     binmode IN;
     my $gd2 = GD::Image->newFromPpm(\*IN);
     close IN;
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "PPM input (filehandle)");
 }
 
 {
@@ -78,7 +86,7 @@ close OUT;
     # $fh->binmode; XXX?
     my $gd2 = GD::Image->newFromPpm($fh);
     $fh->close;
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "PPM input (IO::File)");
 }
 
 unlink $ppm_file;
@@ -89,9 +97,11 @@ unlink $ppm_file;
 my $gif_data = $gd->gif;
 
 my $gd3 = GD::Image->newFromGifData($gif_data);
-ok(!($gd->compare($gd3) & &GD::GD_CMP_IMAGE));
+is($gd->compare($gd3) & &GD::GD_CMP_IMAGE, 0, "GIF output and input (data)");
 
-my $gif_file = "$FindBin::RealBin/test.gif";
+my(undef, $gif_file) = tempfile(UNLINK => 1, SUFFIX => ".gif");
+die "Cannot create temporary file: $!" if !$ppm_file;
+
 open(OUT, ">$gif_file") or die "Can't write $gif_file: $!";
 binmode OUT;
 print OUT $gif_data;
@@ -99,7 +109,7 @@ close OUT;
 
 {
     my $gd2 = GD::Image->newFromGif($gif_file);
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "GIF input (file)");
 }
 
 {
@@ -107,7 +117,7 @@ close OUT;
     binmode IN;
     my $gd2 = GD::Image->newFromGif(\*IN);
     close IN;
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "GIF input (filehandle)");
 }
 
 {
@@ -117,7 +127,7 @@ close OUT;
     # $fh->binmode; XXX?
     my $gd2 = GD::Image->newFromGif($fh);
     $fh->close;
-    ok(!($gd->compare($gd2) & &GD::GD_CMP_IMAGE));
+    is($gd->compare($gd2) & &GD::GD_CMP_IMAGE, 0, "GIF input (IO::File)");
 }
 
 unlink $gif_file;

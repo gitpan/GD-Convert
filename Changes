@@ -1,5 +1,8 @@
 Revision history for Perl extension GD::Convert.
 
+2.15
+	- test improvements, no functional code changes
+
 2.14
 	- fixed possible test failure if no $DISPLAY is available
 	- fixed test failure with old netpbm without -transparent
