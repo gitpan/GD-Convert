@@ -2,7 +2,7 @@
 # -*- perl -*-
 
 #
-# $Id: 30newfrom.t,v 1.7 2008/09/18 22:27:39 eserte Exp $
+# $Id: 30newfrom.t,v 1.8 2008/11/22 08:17:51 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -28,7 +28,7 @@ BEGIN {
 	use GD::Convert qw(gif=any newFromGif=any newFromGifData=any);
 	1;
     }) {
-	if ($@ =~ /Can't find any converter for gif/) {
+	if ($@ =~ /Can't find any converter for (?:gif|newFromGif)/) {
 	    print "1..0 # skip: no gif converter available on this system\n";
 	    exit;
 	}

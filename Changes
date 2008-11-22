@@ -1,5 +1,8 @@
 Revision history for Perl extension GD::Convert.
 
+2.16
+	- test improvements, no functional code changes
+
 2.15
 	- test improvements, no functional code changes
 
